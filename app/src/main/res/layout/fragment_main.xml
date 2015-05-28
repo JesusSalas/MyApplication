@@ -7,8 +7,109 @@
     tools:context=".MainActivity$PlaceholderFragment"
     android:id="@+id/myapplication">
 
-    <TextView android:text="@string/hello_world" android:layout_width="wrap_content"
+    <TextView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/textoUbicacion" />
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Usuario"
+        android:id="@+id/textView"
+        android:textColor="#ff000000"
+        android:textSize="30dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="39dp" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="textPersonName"
+        android:ems="10"
+        android:id="@+id/txtUsuario"
+        android:layout_below="@+id/textView"
+        android:layout_centerHorizontal="true"
+        android:textAlignment="center" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="E-Mail"
+        android:id="@+id/textView2"
+        android:textColor="#ff000000"
+        android:textSize="30dp"
+        android:layout_below="@+id/textView"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="36dp" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="textEmailAddress"
+        android:ems="10"
+        android:id="@+id/txtEmail"
+        android:layout_below="@+id/textView2"
+        android:layout_alignLeft="@+id/txtPasswd"
+        android:layout_alignStart="@+id/txtPasswd"
+        android:textAlignment="center" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Password"
+        android:id="@+id/textView3"
+        android:textColor="#ff000000"
+        android:textSize="30dp"
+        android:layout_below="@+id/txtEmail"
+        android:layout_centerHorizontal="true" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="textPassword"
+        android:ems="10"
+        android:id="@+id/txtPasswd"
+        android:layout_below="@+id/textView3"
+        android:layout_centerHorizontal="true"
+        android:textAlignment="center" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Confirma Password"
+        android:id="@+id/textView4"
+        android:textColor="#ff000000"
+        android:textSize="30dp"
+        android:layout_below="@+id/txtPasswd"
+        android:layout_centerHorizontal="true" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="textPassword"
+        android:ems="10"
+        android:id="@+id/txtPasswdConf"
+        android:layout_below="@+id/textView4"
+        android:layout_centerHorizontal="true"
+        android:textAlignment="center" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Registrar"
+        android:id="@+id/btnRegistrar"
+        android:layout_below="@+id/txtPasswdConf"
+        android:layout_alignLeft="@+id/textView"
+        android:layout_alignStart="@+id/textView"
+        android:layout_marginTop="36dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="¿Ya tienes una cuenta? Inicia Sesión"
+        android:id="@+id/txtLogin"
+        android:layout_below="@+id/btnRegistrar"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>

@@ -23,6 +23,7 @@ public class MiServicio extends Service implements LocationListener {
     boolean gpsActivo;
     TextView texto;
     LocationManager locationManager;
+    String provider = "";
 
     public MiServicio(){
         super();
@@ -35,23 +36,35 @@ public class MiServicio extends Service implements LocationListener {
         getLocation();
     }
 
-    public void setView(View v){
+    /*public void setView(View v){
         texto = (TextView)v;
         texto.setText("Coordenadas: "+latitud+","+longitud);
-    }
+    }*/
 
     public void getLocation(){
         try {
             locationManager = (LocationManager)this.ctx.getSystemService(LOCATION_SERVICE);
             gpsActivo = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            if(!gpsActivo) {
+                gpsActivo = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+                provider="network";
+            }
         }catch (Exception e){}
 
-        if (gpsActivo){
-            locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER
-                    ,1000*6
-                    ,10
-                    ,this);
-            location = locationManager.getLastKnownLocation(locationManager.GPS_PROVIDER);
+        if (gpsActivo) {
+            if (provider == "network"){
+                locationManager.requestLocationUpdates(locationManager.NETWORK_PROVIDER
+                        , 1000 * 6
+                        , 10
+                        , this);
+                location = locationManager.getLastKnownLocation(locationManager.NETWORK_PROVIDER);
+            }else{
+                locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER
+                        ,1000*6
+                        ,10
+                        ,this);
+                location = locationManager.getLastKnownLocation(locationManager.GPS_PROVIDER);
+            }
             latitud = location.getLatitude();
             longitud = location.getLongitude();
         }
@@ -65,20 +78,25 @@ public class MiServicio extends Service implements LocationListener {
     @Override
     public void onLocationChanged(Location location) {
         if (gpsActivo){
-            locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER
-                    ,1000*6
-                    ,10
-                    ,this);
-            location = locationManager.getLastKnownLocation(locationManager.GPS_PROVIDER);
+            if (provider == "network"){
+                locationManager.requestLocationUpdates(locationManager.NETWORK_PROVIDER
+                        , 1000 * 6
+                        , 10
+                        , this);
+                location = locationManager.getLastKnownLocation(locationManager.NETWORK_PROVIDER);
+            }else{
+                locationManager.requestLocationUpdates(locationManager.GPS_PROVIDER
+                        ,1000*6
+                        ,10
+                        ,this);
+                location = locationManager.getLastKnownLocation(locationManager.GPS_PROVIDER);
+            }
             latitud = location.getLatitude();
             longitud = location.getLongitude();
         }
-        texto.setText("Coordenadas: " + latitud + "," + longitud);
-        if((double)((int)(latitud*1000)/100.0)==28.596 && (double)((int)(longitud*1000)/100.0) ==-106.117)
+        if((double)((int)(latitud*10000)/10000.0)==28.5967 && (double)((int)(longitud*10000)/10000.0) ==-106.1169)
             Toast.makeText(ctx, "Se ha encontrado ubicacion conocida", Toast.LENGTH_SHORT).show();
-        /*texto.setText("Latitud: "+String.valueOf(location.getLatitude()));
-        texto.setText("Longitud: " + String.valueOf(location.getLongitude()));
-        Toast.makeText(MiServicio.this,"Location changed!",Toast.LENGTH_SHORT).show();*/
+        //llamar web service para conmparar ubicaciones conocidas en base de datos
     }
 
     @Override

@@ -2,18 +2,34 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.jesus.myapplication" >
 
-    <uses-permission android:name="android.permission.INTERNET"></uses-permission>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"></uses-permission>
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"></uses-permission>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"></uses-permission>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"></uses-permission>
-    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS"></uses-permission>
+    <uses-sdk
+        android:minSdkVersion="9"
+        android:targetSdkVersion="20" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <permission
+        android:name="com.jesus.myapplication.permission.C2D_MESSAGE"
+        android:protectionLevel="signature" />
+
+    <uses-permission android:name="com.jesus.myapplication.permission.C2D_MESSAGE" />
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
+        <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name" >
@@ -24,7 +40,32 @@
             </intent-filter>
         </activity>
 
-        <service android:name="com.jesus.myapplication.servicios.MiServicio"></service>
+        <activity android:name="com.facebook.FacebookActivity"
+            android:configChanges=
+                "keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:label="@string/app_name" />
+
+        <provider android:authorities="com.facebook.app.FacebookContentProvider819218651459247"
+            android:name="com.facebook.FacebookContentProvider"
+            android:exported="true" />
+
+        <receiver
+            android:name=".GCMBroadcastReceiver"
+            android:permission="com.google.android.c2dm.permission.SEND" >
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+
+                <category android:name="com.jesus.myapplication" />
+            </intent-filter>
+        </receiver>
+
+        <service android:name=".servicios.GCMIntentService" />
+        <service android:name=".servicios.MiServicio" />
+
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
     </application>
 
 </manifest>

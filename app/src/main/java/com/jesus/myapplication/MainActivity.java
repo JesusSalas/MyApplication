@@ -1,16 +1,38 @@
 package com.jesus.myapplication;
 
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar;
-import android.support.v4.app.Fragment;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBarActivity;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.os.Build;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.facebook.CallbackManager;
+import com.facebook.FacebookSdk;
+import com.facebook.login.widget.LoginButton;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.jesus.myapplication.servicios.MiServicio;
+
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Locale;
+
+import static android.view.View.OnClickListener;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -18,6 +40,7 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        FacebookSdk.sdkInitialize(getApplicationContext());
         setContentView(R.layout.activity_main);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
@@ -25,7 +48,6 @@ public class MainActivity extends ActionBarActivity {
                     .commit();
         }
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -53,19 +75,194 @@ public class MainActivity extends ActionBarActivity {
      * A placeholder fragment containing a simple view.
      */
     public static class PlaceholderFragment extends Fragment {
+        private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+        private static final String PROPERTY_REG_ID = "registration_id";
+        private static final String PROPERTY_APP_VERSION = "appVersion";
+        private static final String PROPERTY_EXPIRATION_TIME = "onServerExpirationTimeMs";
+        private static final String PROPERTY_USER = "user";
+        Button reg;
+        EditText txtUsu,txtEmail,txtPasswd,txtPasswdConf;
+        TextView txtLogin;
+        String regId;
+        GoogleCloudMessaging gcm;
+        Context context;
+        static final String TAG = "Register Activity";
 
         public PlaceholderFragment() {
         }
 
         @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+        public View onCreateView(final LayoutInflater inflater, final ViewGroup container,
                                  Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+            final View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
             MiServicio servicio = new MiServicio(getActivity().getApplicationContext());
+            //servicio.setView(rootView.findViewById(R.id.textoUbicacion));
 
-            servicio.setView(rootView.findViewById(R.id.textoUbicacion));
+            txtUsu = (EditText)rootView.findViewById(R.id.txtUsuario);
+            txtEmail = (EditText)rootView.findViewById(R.id.txtEmail);
+            txtPasswd = (EditText)rootView.findViewById(R.id.txtPasswd);
+            txtPasswdConf = (EditText)rootView.findViewById(R.id.txtPasswdConf);
+            txtLogin = (TextView)rootView.findViewById(R.id.txtLogin);
+            reg = (Button)rootView.findViewById(R.id.btnRegistrar);
+
+            /*txtLogin.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    inflater.inflate(R.layout.fragment_login,container,false);
+                }
+            });*/
+
+            reg.setOnClickListener(new OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    context = getActivity().getApplicationContext();
+                    if(TextUtils.isEmpty(txtUsu.getText().toString())) {
+                        Toast.makeText(context,"Favor de elegir un nombre de usuario",Toast.LENGTH_SHORT).show();
+                    }else if(TextUtils.isEmpty(txtEmail.getText().toString())){
+                        Toast.makeText(context,"Favor de proporcionar un email",Toast.LENGTH_SHORT).show();
+                    }else if(TextUtils.isEmpty(txtPasswd.getText().toString())){
+                        Toast.makeText(context,"Favor de escoger un password",Toast.LENGTH_SHORT).show();
+                    }else if(TextUtils.isEmpty(txtPasswdConf.getText().toString())){
+                        Toast.makeText(context,"Favor de confirmar el password",Toast.LENGTH_SHORT).show();
+                    }else if(!txtPasswd.getText().toString().equals(txtPasswdConf.getText().toString())) {
+                        Toast.makeText(context,"Los passwords no coinciden",Toast.LENGTH_SHORT).show();
+                    }else{
+
+                        //Chequemos si está instalado Google Play Services
+                        if (checkPlayServices()) {
+                            gcm = GoogleCloudMessaging.getInstance(context);
+
+                            //Obtenemos el Registration ID guardado
+                            regId = getRegistrationId(context);
+
+                            //Si no disponemos de Registration ID comenzamos el registro
+                            if (regId.equals("")) {
+                                TareaRegistroGCM tarea = new TareaRegistroGCM();
+                                tarea.execute(txtUsu.getText().toString(),txtEmail.getText().toString(),txtPasswd.getText().toString());
+                            }
+                        } else {
+                            Log.i(TAG, "No se ha encontrado Google Play Services.");
+                        }
+                    }
+                }
+
+                /*private boolean checkPlayServices() {
+                    int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(getActivity().getApplicationContext());
+                    if (resultCode != ConnectionResult.SUCCESS) {
+                        if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
+                            GooglePlayServicesUtil.getErrorDialog(resultCode, getActivity(),
+                                    PLAY_SERVICES_RESOLUTION_REQUEST).show();
+                        }else{
+                            Log.i(TAG, "Dispositivo no soportado.");
+                            getActivity().finish();
+                        }
+                        return false;
+                    }
+                    return true;
+                }
+
+                private String getRegistrationId(Context context) {
+                    SharedPreferences prefs = context.getSharedPreferences(
+                            MainActivity.class.getSimpleName(),
+                            Context.MODE_PRIVATE);
+                    String registrationId = prefs.getString(PROPERTY_REG_ID, "");
+                    if (registrationId.length() == 0) {
+                        Log.d(TAG, "Registro GCM no encontrado.");
+                        return "";
+                    }
+                    String registeredUser = prefs.getString(PROPERTY_USER, "user");
+                    int registeredVersion = prefs.getInt(PROPERTY_APP_VERSION, Integer.MIN_VALUE);
+                    long expirationTime = prefs.getLong(PROPERTY_EXPIRATION_TIME, -1);
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+                    String expirationDate = sdf.format(new Date(expirationTime));
+                    Log.d(TAG, "Registro GCM encontrado (usuario=" + registeredUser +
+                            ", version=" + registeredVersion +
+                            ", expira=" + expirationDate + ")");
+                    int currentVersion = getAppVersion(context);
+                    if (registeredVersion != currentVersion) {
+                        Log.d(TAG, "Nueva versión de la aplicación.");
+                        return "";
+                    }else if (System.currentTimeMillis() > expirationTime) {
+                        Log.d(TAG, "Registro GCM expirado.");
+                        return "";
+                    }else if (!txtUsu.getText().toString().equals(registeredUser)) {
+                        Log.d(TAG, "Nuevo nombre de usuario.");
+                        return "";
+                    }
+                    return registrationId;
+                }
+
+                private int getAppVersion(Context context) {
+                    try {
+                        PackageInfo packageInfo = context.getPackageManager()
+                                .getPackageInfo(context.getPackageName(), 0);
+                        return packageInfo.versionCode;
+                    } catch (PackageManager.NameNotFoundException e){
+                        throw new RuntimeException("Error al obtener versión: " + e);
+                    }
+                }*/
+
+            });
+
             return rootView;
         }
+        private boolean checkPlayServices() {
+            int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(getActivity().getApplicationContext());
+            if (resultCode != ConnectionResult.SUCCESS) {
+                if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
+                    GooglePlayServicesUtil.getErrorDialog(resultCode, getActivity(),
+                            PLAY_SERVICES_RESOLUTION_REQUEST).show();
+                }else{
+                    Log.i(TAG, "Dispositivo no soportado.");
+                    getActivity().finish();
+                }
+                return false;
+            }
+            return true;
+        }
+
+        private String getRegistrationId(Context context) {
+            SharedPreferences prefs = context.getSharedPreferences(
+                    MainActivity.class.getSimpleName(),
+                    Context.MODE_PRIVATE);
+            String registrationId = prefs.getString(PROPERTY_REG_ID, "");
+            if (registrationId.length() == 0) {
+                Log.d(TAG, "Registro GCM no encontrado.");
+                return "";
+            }
+            String registeredUser = prefs.getString(PROPERTY_USER, "user");
+            int registeredVersion = prefs.getInt(PROPERTY_APP_VERSION, Integer.MIN_VALUE);
+            long expirationTime = prefs.getLong(PROPERTY_EXPIRATION_TIME, -1);
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+            String expirationDate = sdf.format(new Date(expirationTime));
+            Log.d(TAG, "Registro GCM encontrado (usuario=" + registeredUser +
+                    ", version=" + registeredVersion +
+                    ", expira=" + expirationDate + ")");
+            int currentVersion = getAppVersion(context);
+            if (registeredVersion != currentVersion) {
+                Log.d(TAG, "Nueva versión de la aplicación.");
+                return "";
+            }else if (System.currentTimeMillis() > expirationTime) {
+                Log.d(TAG, "Registro GCM expirado.");
+                return "";
+            }else if (!txtUsu.getText().toString().equals(registeredUser)) {
+                Log.d(TAG, "Nuevo nombre de usuario.");
+                return "";
+            }
+            return registrationId;
+        }
+
+        private int getAppVersion(Context context) {
+            try {
+                PackageInfo packageInfo = context.getPackageManager()
+                        .getPackageInfo(context.getPackageName(), 0);
+                return packageInfo.versionCode;
+            } catch (PackageManager.NameNotFoundException e){
+                throw new RuntimeException("Error al obtener versión: " + e);
+            }
+        }
     }
+
 }
