@@ -11,33 +11,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Usuario"
-        android:id="@+id/textView"
-        android:textColor="#ff000000"
-        android:textSize="30dp"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="39dp" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="textPersonName"
-        android:ems="10"
-        android:id="@+id/txtUsuario"
-        android:layout_below="@+id/textView"
-        android:layout_centerHorizontal="true"
-        android:textAlignment="center" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="E-Mail"
         android:id="@+id/textView2"
         android:textColor="#ff000000"
         android:textSize="30dp"
-        android:layout_below="@+id/textView"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="36dp" />
 
@@ -61,7 +38,8 @@
         android:textColor="#ff000000"
         android:textSize="30dp"
         android:layout_below="@+id/txtEmail"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="41dp" />
 
     <EditText
         android:layout_width="wrap_content"
@@ -82,7 +60,8 @@
         android:textColor="#ff000000"
         android:textSize="30dp"
         android:layout_below="@+id/txtPasswd"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="38dp" />
 
     <EditText
         android:layout_width="wrap_content"
@@ -100,9 +79,8 @@
         android:text="Registrar"
         android:id="@+id/btnRegistrar"
         android:layout_below="@+id/txtPasswdConf"
-        android:layout_alignLeft="@+id/textView"
-        android:layout_alignStart="@+id/textView"
-        android:layout_marginTop="36dp" />
+        android:layout_marginTop="36dp"
+        android:layout_centerHorizontal="true" />
 
     <TextView
         android:layout_width="wrap_content"

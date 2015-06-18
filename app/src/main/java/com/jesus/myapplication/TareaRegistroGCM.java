@@ -5,13 +5,14 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
@@ -27,6 +28,7 @@ import java.util.List;
  * Created by JesúsHumberto on 19/05/2015.
  */
 public class TareaRegistroGCM extends AsyncTask<String,Integer,String> {
+
     private static final String SENDER_ID = "912215069822";
     static final String TAG = "Register Activity";
     private static final String PROPERTY_REG_ID = "registration_id";
@@ -37,6 +39,11 @@ public class TareaRegistroGCM extends AsyncTask<String,Integer,String> {
     GoogleCloudMessaging gcm;
     Context context;
     String regId;
+
+    TareaRegistroGCM(Context context){
+        this.context = context;
+    }
+
     @Override
     protected String doInBackground(String... params) {
         String msg = "";
@@ -48,12 +55,10 @@ public class TareaRegistroGCM extends AsyncTask<String,Integer,String> {
             regId = gcm.register(SENDER_ID);
             Log.d(TAG, "Registrado en GCM: registration_id=" + regId);
             //Nos registramos en nuestro servidor
-            boolean registrado = registroServidor(params[0],params[1],params[2], regId);
+            boolean registrado = registroServidor(params[0],params[1], regId);
 
             //Guardamos los datos del registro
-            if(registrado) {
-                setRegistrationId(context, params[0], regId);
-            }
+            if(registrado) setRegistrationId(context, params[0], regId);
         }catch (IOException ex) {
             Log.d(TAG, "Error registro en GCM:" + ex.getMessage());
         }
@@ -62,7 +67,7 @@ public class TareaRegistroGCM extends AsyncTask<String,Integer,String> {
 
     private void setRegistrationId(Context context, String usuario, String regId) {
         SharedPreferences prefs = context.getSharedPreferences(
-                MainActivity.class.getSimpleName(),
+                "AppData",
                 Context.MODE_PRIVATE);
 
         int appVersion = getAppVersion(context);
@@ -87,30 +92,35 @@ public class TareaRegistroGCM extends AsyncTask<String,Integer,String> {
         }
     }
 
-    private boolean registroServidor(String usuario,String email,String passwd, String regId) {
+    public boolean registroServidor(String email,String passwd, String regId) throws IOException {
 
-        try{
-            HttpClient httpclient = new DefaultHttpClient();
-            // URL del servicio que almacenara la imagen
-            HttpPost httppost = new HttpPost("http://192.168.1.73/movil/services.php?registro=1");
+        HttpClient httpclient = new DefaultHttpClient();
+        // URL del servicio que almacenara la imagen
+        HttpPost httppost = new HttpPost("http://192.168.1.73/movil/services.php?registro=1");
 
-            // Creamos los parámetros de la petición
-            List<BasicNameValuePair> nameValuePairs = new ArrayList<BasicNameValuePair>();
-            nameValuePairs.add(new BasicNameValuePair("usuario", usuario));
-            nameValuePairs.add(new BasicNameValuePair("email", email));
-            nameValuePairs.add(new BasicNameValuePair("passwd", passwd));
-            nameValuePairs.add(new BasicNameValuePair("regGCM", regId));
+        // Creamos los parámetros de la petición
+        List<BasicNameValuePair> nameValuePairs = new ArrayList<BasicNameValuePair>();
+        nameValuePairs.add(new BasicNameValuePair("usuario", email));
+        nameValuePairs.add(new BasicNameValuePair("passwd", passwd));
+        nameValuePairs.add(new BasicNameValuePair("regGCM", regId));
 
-            httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+        httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
-            // Ejecutamos la petición
+        try {
             HttpResponse response = httpclient.execute(httppost);
-            HttpEntity ent = response.getEntity();
-            Toast.makeText(context, EntityUtils.toString(ent),Toast.LENGTH_SHORT).show();
-
-            return true;
+            StatusLine statusLine = response.getStatusLine();
+            int statusCode = statusLine.getStatusCode();
+            if (statusCode == 200){
+                HttpEntity httpEntity = response.getEntity();
+                //Toast.makeText(context, EntityUtils.toString(httpEntity),Toast.LENGTH_SHORT).show();
+                Log.d(TAG,EntityUtils.toString(httpEntity));
+                return true;
+            }else{
+                Log.d(TAG,"statusCode: "+statusCode);
+                return false;
+            }
         }catch (Exception e){
-            Log.d(TAG, "Error en petición HTTP:"+e);
+            Log.d(TAG,e.getLocalizedMessage());
             return false;
         }
     }

@@ -1,6 +1,5 @@
 package com.jesus.myapplication;
 
-import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -16,6 +15,6 @@ public class GCMBroadcastReceiver extends WakefulBroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         ComponentName comp = new ComponentName(context.getPackageName(), GCMIntentService.class.getName());
         startWakefulService(context,(intent.setComponent(comp)));
-        setResultCode(Activity.RESULT_OK);
+        setResultCode(MainActivity.RESULT_OK);
     }
 }
